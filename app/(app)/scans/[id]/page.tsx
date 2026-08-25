@@ -11,6 +11,7 @@ import {
   RefreshCw,
   ScanLine,
   ShieldQuestion,
+  Sparkles,
   Sprout,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -319,6 +320,16 @@ export default function ScanDetailPage({
                     </div>
                   </CardHeader>
                   <CardBody className="pt-4">
+                    {diagnosis.treatments_are_ai_suggested && (
+                      <div className="mb-4 flex gap-2.5 rounded-xl border border-brand-400/25 bg-brand-soft p-3 text-sm text-body">
+                        <Sparkles className="h-4 w-4 shrink-0 text-accent-link" />
+                        <p>
+                          This crop isn&apos;t in our field guide yet, so this plan is the
+                          model&apos;s own suggestion rather than a vetted protocol. Treat
+                          it as a starting point.
+                        </p>
+                      </div>
+                    )}
                     <TreatmentPlan treatments={diagnosis.treatments} />
                   </CardBody>
                 </Card>

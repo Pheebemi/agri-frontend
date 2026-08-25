@@ -42,7 +42,7 @@ export interface CropDetail extends Crop {
 }
 
 export interface Treatment {
-  id: number;
+  id: number | string;
   approach: "ORGANIC" | "CHEMICAL" | "PREVENTIVE" | "IMMEDIATE";
   approach_display: string;
   title: string;
@@ -90,6 +90,7 @@ export interface Diagnosis {
   corrected_disease: Disease | null;
   identified_crop: number | null;
   identified_crop_name: string;
+  raw_crop_label: string;
   raw_label: string;
   confidence: number;
   confidence_percent: number;
@@ -108,6 +109,7 @@ export interface Diagnosis {
   review_notes: string;
   candidates: DiagnosisCandidate[];
   treatments: Treatment[];
+  treatments_are_ai_suggested: boolean;
   created_at: string;
 }
 
