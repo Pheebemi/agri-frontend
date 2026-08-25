@@ -12,11 +12,6 @@ import { Field, Input } from "@/components/ui/input";
 import { errorMessage } from "@/lib/api/errors";
 import { useAuth } from "@/lib/auth-context";
 
-const DEMO = [
-  { label: "Farmer", email: "farmer@agriscan.app", password: "farmer12345" },
-  { label: "Agronomist", email: "agronomist@agriscan.app", password: "agro12345" },
-];
-
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
@@ -42,11 +37,6 @@ export default function LoginPage() {
     }
   }
 
-  function fillDemo(account: (typeof DEMO)[number]) {
-    setEmail(account.email);
-    setPassword(account.password);
-  }
-
   return (
     <main className="mx-auto grid max-w-6xl gap-10 px-5 py-8 lg:grid-cols-2 lg:py-12">
       <AuthPanel
@@ -56,7 +46,7 @@ export default function LoginPage() {
         points={[
           "Your scans stay private to your account",
           "Full treatment plans on every diagnosis",
-          "Works whether or not an AI key is configured",
+          "Diagnosis in seconds, every time",
         ]}
       />
 
@@ -100,32 +90,6 @@ export default function LoginPage() {
               {!submitting && <ArrowRight className="h-4 w-4" />}
             </Button>
           </form>
-
-          <div className="mt-7 rounded-xl border border-line bg-surface p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-faint">
-              Demo accounts
-            </p>
-            <div className="mt-3 space-y-2">
-              {DEMO.map((account) => (
-                <button
-                  key={account.email}
-                  type="button"
-                  onClick={() => fillDemo(account)}
-                  className="flex w-full items-center justify-between rounded-lg border border-line-strong px-3 py-2 text-left transition-colors hover:border-brand-400 hover:bg-brand-soft"
-                >
-                  <span>
-                    <span className="block text-sm font-medium text-strong">
-                      {account.label}
-                    </span>
-                    <span className="block font-mono text-[11px] text-faint">
-                      {account.email}
-                    </span>
-                  </span>
-                  <span className="text-xs font-medium text-accent-link">Use</span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </main>

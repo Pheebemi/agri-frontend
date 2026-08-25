@@ -59,7 +59,7 @@ export default function RegisterPage() {
         title="Start diagnosing in two minutes"
         body="Free to create, no card required. Photograph a leaf and get a graded diagnosis with a treatment plan."
         points={[
-          "10 crops and 27 diseases in the field guide",
+          "A crop and disease field guide, always at hand",
           "Organic and chemical treatment routes",
           "Low-confidence results reviewed by an agronomist",
         ]}
