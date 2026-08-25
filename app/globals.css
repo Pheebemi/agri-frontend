@@ -1,0 +1,284 @@
+@import "tailwindcss";
+
+/* Dark is a class on <html> (next-themes), not the OS media query,
+   so the in-app toggle can override the system preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  /* --- shadcn bridge --- */
+  --color-background:             var(--background);
+  --color-foreground:             var(--foreground);
+  --color-card:                   var(--card);
+  --color-card-foreground:        var(--card-foreground);
+  --color-popover:                var(--popover);
+  --color-popover-foreground:     var(--popover-foreground);
+  --color-primary:                var(--primary);
+  --color-primary-foreground:     var(--primary-foreground);
+  --color-secondary:              var(--secondary);
+  --color-secondary-foreground:   var(--secondary-foreground);
+  --color-muted:                  var(--muted);
+  --color-muted-foreground:       var(--muted-foreground);
+  --color-accent:                 var(--accent);
+  --color-accent-foreground:      var(--accent-foreground);
+  --color-destructive:            var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border:                 var(--border);
+  --color-input:                  var(--input);
+  --color-ring:                   var(--ring);
+  --radius:                       var(--radius);
+  --font-sans:                    var(--font-geist-sans);
+  --font-mono:                    var(--font-geist-mono);
+
+  /* --- brand ramp: LITERAL in both themes, on purpose ---
+     The light end is accent *text* on permanently-dark sections (sidebar,
+     footer, hero bands); the dark end is accent text on light surfaces.
+     Flipping the ramp per theme fixes one role and breaks the other — so
+     tinted *surfaces* get their own theme-aware tokens below instead. */
+  --color-brand-50:   #ECFDF4;
+  --color-brand-100:  #D2F9E2;
+  --color-brand-200:  #A7F3C9;
+  --color-brand-300:  #6EE7A9;
+  --color-brand-400:  #34D88B;
+  --color-brand-500:  #16C172;   /* the primary — "sweet green" */
+  --color-brand-600:  #0EA05D;
+  --color-brand-700:  #0B7F4B;
+  --color-brand-800:  #0C643E;
+  --color-brand-900:  #0B5234;
+  --color-brand-950:  #032D1D;
+
+  /* --- semantic tokens: these are what you actually write --- */
+  --color-ink:          var(--ink);
+  --color-ink-soft:     var(--ink-soft);
+  --color-body:         var(--text-body);
+  --color-strong:       var(--text-strong);
+  --color-subtle:       var(--text-subtle);
+  --color-faint:        var(--text-faint);
+  --color-page:         var(--page);
+  --color-surface:      var(--surface);
+  --color-surface-2:    var(--surface-2);
+  --color-inset:        var(--inset);
+  --color-line:         var(--line);
+  --color-line-strong:  var(--line-strong);
+  --color-brand-soft:   var(--brand-soft);
+  --color-brand-softer: var(--brand-softer);
+  --color-accent-link:  var(--accent-link);
+
+  /* Status chips — pale pastel fills glow on a near-black page, so both the
+     fill and its label are theme-aware. */
+  --color-ok:        var(--ok);
+  --color-ok-soft:   var(--ok-soft);
+  --color-warn:      var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-err:       var(--err);
+  --color-err-soft:  var(--err-soft);
+
+  /* Severity ramp — the diagnostic vocabulary, deliberately NOT the same
+     tokens as ok/warn/err: a scan result is a measurement, a toast is
+     feedback, and they must not share a colour by accident. */
+  --color-sev-healthy:       var(--sev-healthy);
+  --color-sev-mild:          var(--sev-mild);
+  --color-sev-moderate:      var(--sev-moderate);
+  --color-sev-severe:        var(--sev-severe);
+  --color-sev-critical:      var(--sev-critical);
+  --color-sev-healthy-soft:  var(--sev-healthy-soft);
+  --color-sev-mild-soft:     var(--sev-mild-soft);
+  --color-sev-moderate-soft: var(--sev-moderate-soft);
+  --color-sev-severe-soft:   var(--sev-severe-soft);
+  --color-sev-critical-soft: var(--sev-critical-soft);
+
+  /* Permanently dark sections — identical in both themes, so light text
+     inside them keeps working with no per-theme overrides. */
+  --color-ink-dark:   #06110C;
+  --color-ink-dark-2: #0C1A13;
+}
+
+/* ── LIGHT ────────────────────────────────────────────────── */
+:root {
+  --radius: 0.75rem;
+
+  --ink:          #04291C;
+  --ink-soft:     #1F5240;
+  --text-strong:  #0F1A15;
+  --text-body:    #4A5A52;
+  --text-subtle:  #6B7C74;
+  --text-faint:   #9AAAA2;
+  --page:         #F2FBF6;
+  --surface:      #FFFFFF;
+  --surface-2:    #FAFEFB;
+  --inset:        #EFF5F1;
+  --line:         #E6F0EA;
+  --line-strong:  #D3E3DA;
+  --brand-soft:   #ECFDF4;
+  --brand-softer: #D2F9E2;
+  --accent-link:  #0B7F4B;   /* brand-700 — brand-500 only hits 2.4:1 on white */
+
+  --ok:        #0E9F5A;   --ok-soft:   #E8FAF0;
+  --warn:      #A8730A;   --warn-soft: #FFF7E6;
+  --err:       #C0362C;   --err-soft:  #FEF2F2;
+
+  --sev-healthy:  #0B7F4B;  --sev-healthy-soft:  #E8FAF0;
+  --sev-mild:     #7A8B15;  --sev-mild-soft:     #F7FAE6;
+  --sev-moderate: #A8730A;  --sev-moderate-soft: #FFF7E6;
+  --sev-severe:   #C05621;  --sev-severe-soft:   #FFF1E8;
+  --sev-critical: #B3261E;  --sev-critical-soft: #FEF2F2;
+
+  --background:             #FFFFFF;
+  --foreground:             #0F1A15;
+  --card:                   #FFFFFF;
+  --card-foreground:        #0F1A15;
+  --popover:                #FFFFFF;
+  --popover-foreground:     #0F1A15;
+  --primary:                #0EA05D;
+  --primary-foreground:     #03150D;
+  --secondary:              #EFF5F1;
+  --secondary-foreground:   #0F1A15;
+  --muted:                  #EFF5F1;
+  --muted-foreground:       #6B7C74;
+  --accent:                 #ECFDF4;
+  --accent-foreground:      #04291C;
+  --destructive:            #C0362C;
+  --destructive-foreground: #FFFFFF;
+  --border:                 #E6F0EA;
+  --input:                  #D3E3DA;
+  --ring:                   #34D88B;
+}
+
+/* ── DARK (the default) ───────────────────────────────────── */
+.dark {
+  --ink:          #EAF5EF;
+  --ink-soft:     #B8CFC4;
+  --text-strong:  #EAF5EF;
+  --text-body:    #93A79D;
+  --text-subtle:  #83968D;
+  --text-faint:   #63756C;
+  --page:         #050807;
+  --surface:      #0C110F;
+  --surface-2:    #121A16;
+  --inset:        #18211D;
+  --line:         #1E2A24;
+  --line-strong:  #2C3D34;
+  /* Brand tints become deep washes of the brand hue instead of pale mints,
+     so hover reads as a lift out of the page rather than a flash. */
+  --brand-soft:   #0A1A13;
+  --brand-softer: #10281C;
+  /* brand-500 only hits ~4.0:1 on this page, so links step up the ramp. */
+  --accent-link:  #5FE3A1;
+
+  --ok:        #4ADE96;   --ok-soft:   #0B2418;
+  --warn:      #F0C64E;   --warn-soft: #2A2210;
+  --err:       #FF8E86;   --err-soft:  #2C1517;
+
+  --sev-healthy:  #4ADE96;  --sev-healthy-soft:  #0B2418;
+  --sev-mild:     #C9E265;  --sev-mild-soft:     #1E2410;
+  --sev-moderate: #F0C64E;  --sev-moderate-soft: #2A2210;
+  --sev-severe:   #FF9F5A;  --sev-severe-soft:   #2C1D10;
+  --sev-critical: #FF8E86;  --sev-critical-soft: #2C1517;
+
+  --background:             #050807;
+  --foreground:             #EAF5EF;
+  --card:                   #0C110F;
+  --card-foreground:        #EAF5EF;
+  --popover:                #0C110F;
+  --popover-foreground:     #EAF5EF;
+  --primary:                #34D88B;
+  --primary-foreground:     #04150D;
+  --secondary:              #18211D;
+  --secondary-foreground:   #EAF5EF;
+  --muted:                  #18211D;
+  --muted-foreground:       #93A79D;
+  --accent:                 #10281C;
+  --accent-foreground:      #EAF5EF;
+  --destructive:            #7F1D1D;
+  --destructive-foreground: #FFE4E2;
+  --border:                 #1E2A24;
+  --input:                  #2C3D34;
+  --ring:                   #34D88B;
+}
+
+/* ── BASE ─────────────────────────────────────────────────── */
+* { border-color: var(--border); }
+
+body {
+  background-color: var(--page);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+:root { color-scheme: light; }
+.dark { color-scheme: dark; }
+
+/* unDraw art is drawn for light backgrounds — its big white fills glare on a
+   near-black page. Knocking back brightness settles them in without washing
+   out the brand-coloured accents. */
+.dark img[src*="/illustrations/"] {
+  filter: brightness(0.82) contrast(1.06);
+}
+
+/* ── Utilities ────────────────────────────────────────────── */
+
+/* The scanning sweep on the capture frame. */
+@keyframes agri-sweep {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+.animate-sweep { animation: agri-sweep 2.1s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+@keyframes agri-pulse-ring {
+  0%   { transform: scale(0.92); opacity: 0.7; }
+  70%  { transform: scale(1.25); opacity: 0; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+.animate-pulse-ring { animation: agri-pulse-ring 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+/* Skeleton shimmer, used by every loading state. */
+@keyframes agri-shimmer {
+  100% { transform: translateX(100%); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--inset);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--line-strong) 55%, transparent),
+    transparent
+  );
+  animation: agri-shimmer 1.6s infinite;
+}
+
+/* A soft green glow behind hero art and the scan frame. Sits under content. */
+.brand-glow::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--color-brand-500) 22%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* Thin scrollbars that follow the theme instead of punching a light-grey
+   channel through a near-black panel. */
+.scroll-slim { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.scroll-slim::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+}
+.scroll-slim::-webkit-scrollbar-track { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sweep, .animate-pulse-ring, .skeleton::after { animation: none; }
+}

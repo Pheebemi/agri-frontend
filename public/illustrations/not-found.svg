@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 400" role="img">
+  <ellipse cx="280" cy="364" rx="200" ry="22" fill="#ECFDF4"/>
+  <g fill="#0B7F4B" font-family="system-ui, sans-serif" font-size="150" font-weight="700">
+    <text x="86" y="252">4</text>
+    <text x="392" y="252">4</text>
+  </g>
+  <g>
+    <circle cx="280" cy="196" r="74" fill="#D2F9E2"/>
+    <path d="M280 142c34 8 52 32 52 56 0 38-30 60-52 60s-52-22-52-58c0-24 18-50 52-58Z" fill="#16C172"/>
+    <path d="M280 146v112" stroke="#ECFDF4" stroke-width="5" stroke-linecap="round"/>
+    <path d="M280 196c-18-4-30-16-34-30M280 232c20-4 32-18 36-32" stroke="#ECFDF4" stroke-width="4" stroke-linecap="round" fill="none"/>
+  </g>
+  <g stroke="#04291C" stroke-width="12" stroke-linecap="round" fill="none">
+    <circle cx="356" cy="290" r="34" stroke-width="10"/>
+    <path d="M380 314l30 30"/>
+  </g>
+  <g fill="#34D88B"><circle cx="72" cy="120" r="8"/><circle cx="496" cy="132" r="6"/><circle cx="120" cy="330" r="5"/></g>
+</svg>
