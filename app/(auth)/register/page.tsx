@@ -57,7 +57,7 @@ export default function RegisterPage() {
       <AuthPanel
         illustration="welcome"
         title="Start diagnosing in two minutes"
-        body="Free to create, no card and no API key. Photograph a leaf and get a graded diagnosis with a treatment plan."
+        body="Free to create, no card required. Photograph a leaf and get a graded diagnosis with a treatment plan."
         points={[
           "10 crops and 27 diseases in the field guide",
           "Organic and chemical treatment routes",

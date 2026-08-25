@@ -54,7 +54,7 @@ export default function LandingPage() {
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-400/30 bg-brand-soft px-3.5 py-1.5 text-xs font-semibold text-accent-link">
               <Sparkles className="h-3.5 w-3.5" />
-              Works with no API key configured
+              Free to start, results in seconds
             </span>
 
             <h1 className="mt-6 text-4xl font-bold leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-[3.4rem]">
@@ -83,21 +83,6 @@ export default function LandingPage() {
                 Sign in
               </Link>
             </div>
-
-            <dl className="mt-10 grid max-w-md grid-cols-3 gap-6">
-              {[
-                ["10", "crops covered"],
-                ["27", "diseases in the guide"],
-                ["60", "treatment protocols"],
-              ].map(([value, label]) => (
-                <div key={label}>
-                  <dt className="font-mono text-2xl font-bold text-ink tabular-nums">
-                    {value}
-                  </dt>
-                  <dd className="mt-0.5 text-xs text-subtle">{label}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
 
           <div className="brand-glow relative">
@@ -191,8 +176,8 @@ export default function LandingPage() {
               {[
                 {
                   icon: WifiOff,
-                  title: "Runs with zero API keys",
-                  body: "The local analyser needs no network and no account. Add a key later and the naming gets sharper — nothing else changes.",
+                  title: "Always available, even offline",
+                  body: "A built-in analyser measures severity and affected leaf area with no setup required, so a scan never comes back empty.",
                 },
                 {
                   icon: ShieldCheck,
@@ -274,7 +259,7 @@ export default function LandingPage() {
               </p>
               <ul className="mt-6 space-y-2">
                 {[
-                  "No credit card, no API key",
+                  "No credit card required",
                   "Full treatment plans included",
                   "Your scan history stays private to you",
                 ].map((item) => (
