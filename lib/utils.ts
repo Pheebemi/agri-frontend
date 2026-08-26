@@ -41,6 +41,14 @@ export function formatDate(iso: string): string {
   });
 }
 
+const money = new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" });
+
+export function formatMoney(amount: number | string): string {
+  const value = typeof amount === "string" ? Number(amount) : amount;
+  if (Number.isNaN(value)) return money.format(0);
+  return money.format(value);
+}
+
 /** Absolute URL for a media path returned by Django. */
 export function mediaUrl(path?: string | null): string {
   if (!path) return "";

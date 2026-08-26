@@ -12,6 +12,7 @@ import {
   ScanLine,
   Settings,
   Users,
+  Wallet,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -24,6 +25,7 @@ const FARMER_NAV = [
   { href: "/scan", label: "New scan", icon: ScanLine },
   { href: "/scans", label: "Scan history", icon: Images },
   { href: "/crops", label: "Crop library", icon: BookOpen },
+  { href: "/farms", label: "Farms", icon: Wallet },
 ];
 
 const ADMIN_NAV = [

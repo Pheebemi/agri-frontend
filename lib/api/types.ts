@@ -195,3 +195,55 @@ export interface AdminDashboard {
   by_region: { region: string; count: number; unhealthy: number }[];
   review_queue: Scan[];
 }
+
+/** "info" | "ok" | "warn" | "err" — the same chip-tone vocabulary used across the app. */
+export type ChipTone = "info" | "ok" | "warn" | "err";
+
+/**
+ * Admin-managed, not a fixed enum — see ExpenseCategory model in the backend.
+ * Fetch the live list via listExpenseCategories() rather than assuming values.
+ */
+export interface ExpenseCategoryOption {
+  id: number;
+  name: string;
+  color: ChipTone;
+  order: number;
+}
+
+export interface Farm {
+  id: number;
+  name: string;
+  crops: string;
+  crop_list: string[];
+  expense_count: number;
+  total_spent: number;
+  created_at: string;
+}
+
+export interface FarmDetail extends Farm {
+  updated_at: string;
+}
+
+export interface Expense {
+  id: number;
+  farm: number;
+  farm_name: string;
+  category: number;
+  category_name: string;
+  category_color: ChipTone;
+  amount: string;
+  date: string;
+  note: string;
+  created_at: string;
+}
+
+export interface ExpenseDetail extends Expense {
+  updated_at: string;
+}
+
+export interface FarmSummary {
+  grand_total: number;
+  expense_count: number;
+  by_category: { category: number; label: string; color: ChipTone; total: number }[];
+  by_farm: { farm: number; farm_name: string; total: number }[];
+}
