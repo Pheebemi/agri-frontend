@@ -14,8 +14,10 @@ import { Field, Select, Textarea } from "@/components/ui/input";
 import { listCrops } from "@/lib/api/catalog";
 import { errorMessage } from "@/lib/api/errors";
 import { createScan } from "@/lib/api/scans";
+import type { Language } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth-context";
 import { useAsync } from "@/lib/hooks/use-async";
+import { DIAGNOSIS_LANGUAGES } from "@/lib/languages";
 
 const TIPS = [
   "One leaf, filling most of the frame",
@@ -31,6 +33,7 @@ export default function ScanPage() {
 
   const [file, setFile] = useState<File | null>(null);
   const [declaredCrop, setDeclaredCrop] = useState("");
+  const [language, setLanguage] = useState<Language | "">("");
   const [notes, setNotes] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
 
@@ -40,12 +43,17 @@ export default function ScanPage() {
       toast.error("Capture or upload a leaf photo first");
       return;
     }
+    if (!language) {
+      toast.error("Pick a language for the diagnosis first");
+      return;
+    }
 
     setAnalyzing(true);
     try {
       const scan = await createScan({
         image: file,
         declaredCrop: declaredCrop ? Number(declaredCrop) : null,
+        language,
         notes,
         region: user?.region,
       });
@@ -109,6 +117,28 @@ export default function ScanPage() {
                 </Field>
 
                 <Field
+                  label="Diagnosis language"
+                  htmlFor="language"
+                  hint="Required — the diagnosis and treatment plan come back in this language."
+                >
+                  <Select
+                    id="language"
+                    required
+                    value={language}
+                    onChange={(event) => setLanguage(event.target.value as Language)}
+                  >
+                    <option value="" disabled>
+                      Choose a language
+                    </option>
+                    {DIAGNOSIS_LANGUAGES.map((option) => (
+                      <option key={option.code} value={option.code}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+
+                <Field
                   label="Anything else worth knowing?"
                   htmlFor="notes"
                   hint="Recent weather, what you've already sprayed, how long it's been spreading."
@@ -126,15 +156,17 @@ export default function ScanPage() {
                   block
                   size="lg"
                   loading={analyzing}
-                  disabled={!file || analyzing}
+                  disabled={!file || !language || analyzing}
                 >
                   <Sparkles className="h-4 w-4" />
                   {analyzing ? "Analysing…" : "Diagnose this leaf"}
                 </Button>
 
-                {!file && (
+                {(!file || !language) && (
                   <p className="text-center text-xs text-faint">
-                    Capture or upload a photo to enable this.
+                    {!file
+                      ? "Capture or upload a photo to enable this."
+                      : "Choose a language to enable this."}
                   </p>
                 )}
               </CardBody>

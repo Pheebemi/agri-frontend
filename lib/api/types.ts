@@ -9,6 +9,9 @@ export type ScanStatus =
   | "NEEDS_REVIEW"
   | "FAILED";
 
+/** Add "ig" here (and in lib/languages.ts) when Igbo ships. */
+export type Language = "en" | "pcm" | "ha";
+
 export interface User {
   id: number;
   email: string;
@@ -118,6 +121,8 @@ export interface Scan {
   image: string;
   status: ScanStatus;
   status_display: string;
+  language: Language;
+  language_display: string;
   crop_name: string;
   disease_name: string;
   severity: SeverityLevel | "";

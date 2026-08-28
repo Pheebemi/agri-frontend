@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { Paginated, Scan, ScanDetail } from "./types";
+import type { Language, Paginated, Scan, ScanDetail } from "./types";
 
 export interface ScanFilters {
   status?: string;
@@ -31,6 +31,7 @@ export function getScan(id: number | string) {
 export interface CreateScanInput {
   image: File;
   declaredCrop?: number | null;
+  language: Language;
   notes?: string;
   region?: string;
 }
@@ -39,13 +40,17 @@ export function createScan(input: CreateScanInput) {
   const form = new FormData();
   form.append("image", input.image);
   if (input.declaredCrop) form.append("declared_crop", String(input.declaredCrop));
+  form.append("language", input.language);
   if (input.notes) form.append("notes", input.notes);
   if (input.region) form.append("region", input.region);
   return api.post<ScanDetail>("/scans/", form);
 }
 
-export function reanalyzeScan(id: number) {
-  return api.post<ScanDetail>(`/scans/${id}/reanalyze/`);
+/** Omit `language` to re-run in whatever language the scan already has. */
+export function reanalyzeScan(id: number, language?: Language) {
+  const form = new FormData();
+  if (language) form.append("language", language);
+  return api.post<ScanDetail>(`/scans/${id}/reanalyze/`, form);
 }
 
 export function reviewScan(

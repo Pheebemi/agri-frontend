@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   Bug,
   Cpu,
+  Languages,
   Leaf,
   RefreshCw,
   ScanLine,
@@ -22,13 +23,16 @@ import { Badge, SeverityBadge, StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfidenceMeter, SeverityGauge } from "@/components/ui/confidence";
+import { Dialog } from "@/components/ui/dialog";
 import { EmptyState, ErrorState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { errorMessage } from "@/lib/api/errors";
 import { getScan, reanalyzeScan } from "@/lib/api/scans";
+import type { Language } from "@/lib/api/types";
 import { useAsync } from "@/lib/hooks/use-async";
+import { DIAGNOSIS_LANGUAGES } from "@/lib/languages";
 import { SEVERITY_CHART_COLOR, severityStyle } from "@/lib/severity";
-import { formatDate, mediaUrl } from "@/lib/utils";
+import { cn, formatDate, mediaUrl } from "@/lib/utils";
 
 export default function ScanDetailPage({
   params,
@@ -42,11 +46,13 @@ export default function ScanDetailPage({
     "Couldn't load that scan",
   );
   const [reanalyzing, setReanalyzing] = useState(false);
+  const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
 
-  async function handleReanalyze() {
+  async function handleReanalyze(language: Language) {
+    setLanguageDialogOpen(false);
     setReanalyzing(true);
     try {
-      await reanalyzeScan(Number(id));
+      await reanalyzeScan(Number(id), language);
       toast.success("Re-analysed");
       reload();
     } catch (caught) {
@@ -96,7 +102,7 @@ export default function ScanDetailPage({
           <Button
             variant="secondary"
             size="sm"
-            onClick={handleReanalyze}
+            onClick={() => setLanguageDialogOpen(true)}
             loading={reanalyzing}
           >
             <RefreshCw className="h-3.5 w-3.5" />
@@ -164,6 +170,9 @@ export default function ScanDetailPage({
                     </span>
                   </Detail>
                 )}
+                <Detail icon={Languages} label="Language">
+                  {scan.language_display}
+                </Detail>
                 {scan.region && (
                   <Detail icon={Leaf} label="Region">
                     {scan.region}
@@ -194,7 +203,7 @@ export default function ScanDetailPage({
                       "The pipeline hasn't produced a result for this image yet."
                     }
                     action={
-                      <Button onClick={handleReanalyze} loading={reanalyzing}>
+                      <Button onClick={() => setLanguageDialogOpen(true)} loading={reanalyzing}>
                         <RefreshCw className="h-4 w-4" />
                         Run the analysis
                       </Button>
@@ -371,6 +380,34 @@ export default function ScanDetailPage({
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={languageDialogOpen}
+        onClose={() => setLanguageDialogOpen(false)}
+        title="Re-analyse in which language?"
+      >
+        <div className="flex flex-wrap gap-2">
+          {DIAGNOSIS_LANGUAGES.map((option) => (
+            <button
+              key={option.code}
+              type="button"
+              disabled={reanalyzing}
+              onClick={() => handleReanalyze(option.code)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-all disabled:opacity-50",
+                scan.language === option.code
+                  ? "border-brand-400/40 bg-brand-softer text-accent-link"
+                  : "border-line-strong text-subtle hover:border-brand-400/40 hover:text-accent-link",
+              )}
+            >
+              {option.label}
+              {scan.language === option.code && (
+                <span className="font-mono text-[10px] opacity-60">current</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </Dialog>
     </>
   );
 }
