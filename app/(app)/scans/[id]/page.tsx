@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -47,6 +47,118 @@ export default function ScanDetailPage({
   );
   const [reanalyzing, setReanalyzing] = useState(false);
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
+  const [voiceLanguage, setVoiceLanguage] = useState<Language>(scan?.language ?? "en");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  useEffect(() => {
+    if (scan?.language) {
+      setVoiceLanguage(scan.language);
+    }
+  }, [scan?.language]);
+
+  function getVoiceLocale(language: Language) {
+    switch (language) {
+      case "ha":
+        return "ha-NG";
+      case "pcm":
+        return "en-NG";
+      case "en":
+      default:
+        return "en-US";
+    }
+  }
+
+  function findBestVoice(language: Language) {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    const locale = getVoiceLocale(language);
+    const languagePrefix = locale.slice(0, 2).toLowerCase();
+    const voices = window.speechSynthesis.getVoices();
+
+    const preferred = voices.filter((voice) => {
+      const match = voice.lang.toLowerCase();
+      return (
+        match === locale.toLowerCase() ||
+        match.startsWith(`${languagePrefix}-`) ||
+        match.startsWith(languagePrefix)
+      );
+    });
+
+    if (preferred.length) {
+      return preferred.find((voice) => voice.localService) ?? preferred[0];
+    }
+
+    const fallback = voices.filter((voice) =>
+      voice.lang.toLowerCase().startsWith(language === "ha" ? "ha" : "en"),
+    );
+
+    return fallback.find((voice) => voice.localService) ?? fallback[0] ?? null;
+  }
+
+  function buildSpeechText() {
+    if (!diagnosis) return "";
+
+    const parts = [
+      disease?.name || diagnosis.raw_label || "Unidentified crop issue",
+      diagnosis.summary,
+      `Severity: ${diagnosis.severity_display}`,
+    ];
+
+    if (diagnosis.treatments?.length) {
+      parts.push("Treatment plan:");
+      diagnosis.treatments.slice(0, 3).forEach((treatment) => {
+        const title = treatment.title || "Action";
+        const instruction = treatment.instructions || "";
+        const timeframe = treatment.timeframe ? `Timeframe: ${treatment.timeframe}.` : "";
+        const materialLine = treatment.materials ? `Materials: ${treatment.materials}.` : "";
+        parts.push(`${title}. ${instruction} ${timeframe} ${materialLine}`.trim());
+      });
+    }
+
+    return parts.filter(Boolean).join(" ");
+  }
+
+  function stopSpeech() {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      return;
+    }
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  }
+
+  function playDiagnosisReport(language: Language) {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      toast.error("This browser does not support spoken output.");
+      return;
+    }
+
+    const text = buildSpeechText();
+    if (!text.trim()) {
+      toast.error("There is no diagnosis text to play yet.");
+      return;
+    }
+
+    const synth = window.speechSynthesis;
+    synth.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = getVoiceLocale(language);
+    utterance.rate = 0.96;
+    utterance.pitch = 1.04;
+
+    const match = findBestVoice(language);
+    if (match) {
+      utterance.voice = match;
+      utterance.lang = match.lang;
+    }
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    synth.speak(utterance);
+  }
 
   async function handleReanalyze(language: Language) {
     setLanguageDialogOpen(false);
@@ -240,6 +352,35 @@ export default function ScanDetailPage({
                     {diagnosis.summary && (
                       <p className="mt-3 leading-relaxed text-body">{diagnosis.summary}</p>
                     )}
+
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
+                        Audio
+                      </span>
+                      <select
+                        aria-label="Voice language"
+                        value={voiceLanguage}
+                        onChange={(event) => setVoiceLanguage(event.target.value as Language)}
+                        className="rounded-xl border border-line-strong bg-surface px-2.5 py-1.5 text-xs text-body outline-none transition-colors focus:border-brand-400"
+                      >
+                        {DIAGNOSIS_LANGUAGES.map((option) => (
+                          <option key={option.code} value={option.code}>
+                            {option.label}
+                            {scan.language === option.code ? " (current)" : ""}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          isSpeaking ? stopSpeech() : playDiagnosisReport(voiceLanguage)
+                        }
+                      >
+                        {isSpeaking ? "Stop" : "Play report"}
+                      </Button>
+                    </div>
 
                     {diagnosis.needs_review && (
                       <div className="mt-4 flex gap-3 rounded-xl border border-warn/25 bg-warn-soft p-3.5">
