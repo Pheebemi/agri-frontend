@@ -1,6 +1,6 @@
 import { readDrfError } from "./errors";
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+export const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
 const ACCESS_KEY = "agriscan.access";
 const REFRESH_KEY = "agriscan.refresh";

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -27,7 +27,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { EmptyState, ErrorState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { errorMessage } from "@/lib/api/errors";
-import { getScan, reanalyzeScan } from "@/lib/api/scans";
+import { fetchScanSpeech, getScan, reanalyzeScan } from "@/lib/api/scans";
 import type { Language } from "@/lib/api/types";
 import { useAsync } from "@/lib/hooks/use-async";
 import { DIAGNOSIS_LANGUAGES } from "@/lib/languages";
@@ -47,117 +47,57 @@ export default function ScanDetailPage({
   );
   const [reanalyzing, setReanalyzing] = useState(false);
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
-  const [voiceLanguage, setVoiceLanguage] = useState<Language>(scan?.language ?? "en");
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
 
+  // Revoke any outstanding blob URL and stop playback when the page unmounts
+  // or the scan changes out from under it.
   useEffect(() => {
-    if (scan?.language) {
-      setVoiceLanguage(scan.language);
-    }
-  }, [scan?.language]);
-
-  function getVoiceLocale(language: Language) {
-    switch (language) {
-      case "ha":
-        return "ha-NG";
-      case "pcm":
-        return "en-NG";
-      case "en":
-      default:
-        return "en-US";
-    }
-  }
-
-  function findBestVoice(language: Language) {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    const locale = getVoiceLocale(language);
-    const languagePrefix = locale.slice(0, 2).toLowerCase();
-    const voices = window.speechSynthesis.getVoices();
-
-    const preferred = voices.filter((voice) => {
-      const match = voice.lang.toLowerCase();
-      return (
-        match === locale.toLowerCase() ||
-        match.startsWith(`${languagePrefix}-`) ||
-        match.startsWith(languagePrefix)
-      );
-    });
-
-    if (preferred.length) {
-      return preferred.find((voice) => voice.localService) ?? preferred[0];
-    }
-
-    const fallback = voices.filter((voice) =>
-      voice.lang.toLowerCase().startsWith(language === "ha" ? "ha" : "en"),
-    );
-
-    return fallback.find((voice) => voice.localService) ?? fallback[0] ?? null;
-  }
-
-  function buildSpeechText() {
-    if (!diagnosis) return "";
-
-    const parts = [
-      disease?.name || diagnosis.raw_label || "Unidentified crop issue",
-      diagnosis.summary,
-      `Severity: ${diagnosis.severity_display}`,
-    ];
-
-    if (diagnosis.treatments?.length) {
-      parts.push("Treatment plan:");
-      diagnosis.treatments.slice(0, 3).forEach((treatment) => {
-        const title = treatment.title || "Action";
-        const instruction = treatment.instructions || "";
-        const timeframe = treatment.timeframe ? `Timeframe: ${treatment.timeframe}.` : "";
-        const materialLine = treatment.materials ? `Materials: ${treatment.materials}.` : "";
-        parts.push(`${title}. ${instruction} ${timeframe} ${materialLine}`.trim());
-      });
-    }
-
-    return parts.filter(Boolean).join(" ");
-  }
+    return () => {
+      audioRef.current?.pause();
+      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+    };
+  }, [id]);
 
   function stopSpeech() {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      return;
-    }
-    window.speechSynthesis.cancel();
+    audioRef.current?.pause();
     setIsSpeaking(false);
   }
 
-  function playDiagnosisReport(language: Language) {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      toast.error("This browser does not support spoken output.");
-      return;
-    }
-
-    const text = buildSpeechText();
-    if (!text.trim()) {
+  // Spoken audio is generated server-side (Azure AI Speech + Hugging Face
+  // MMS for Hausa, see agri-backend apps/scans/speech.py) and always reads
+  // the diagnosis in the scan's own language — the diagnosis text itself
+  // only ever exists in whatever language the scan was last analysed in
+  // (see DiagnosisSerializer), so there's no independent "playback language"
+  // to pick separately. To hear it in another language, re-analyse the scan
+  // into that language first, then play again.
+  async function playDiagnosisReport() {
+    if (!scan || !diagnosis) {
       toast.error("There is no diagnosis text to play yet.");
       return;
     }
 
-    const synth = window.speechSynthesis;
-    synth.cancel();
+    audioRef.current?.pause();
+    setAudioLoading(true);
+    try {
+      const blob = await fetchScanSpeech(id);
+      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+      const url = URL.createObjectURL(blob);
+      audioUrlRef.current = url;
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = getVoiceLocale(language);
-    utterance.rate = 0.96;
-    utterance.pitch = 1.04;
-
-    const match = findBestVoice(language);
-    if (match) {
-      utterance.voice = match;
-      utterance.lang = match.lang;
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onplay = () => setIsSpeaking(true);
+      audio.onended = () => setIsSpeaking(false);
+      audio.onerror = () => setIsSpeaking(false);
+      await audio.play();
+    } catch (caught) {
+      toast.error(errorMessage(caught, "Couldn't generate audio for this report"));
+    } finally {
+      setAudioLoading(false);
     }
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    synth.speak(utterance);
   }
 
   async function handleReanalyze(language: Language) {
@@ -355,28 +295,14 @@ export default function ScanDetailPage({
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
                       <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
-                        Audio
+                        Audio · {scan.language_display}
                       </span>
-                      <select
-                        aria-label="Voice language"
-                        value={voiceLanguage}
-                        onChange={(event) => setVoiceLanguage(event.target.value as Language)}
-                        className="rounded-xl border border-line-strong bg-surface px-2.5 py-1.5 text-xs text-body outline-none transition-colors focus:border-brand-400"
-                      >
-                        {DIAGNOSIS_LANGUAGES.map((option) => (
-                          <option key={option.code} value={option.code}>
-                            {option.label}
-                            {scan.language === option.code ? " (current)" : ""}
-                          </option>
-                        ))}
-                      </select>
                       <Button
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={() =>
-                          isSpeaking ? stopSpeech() : playDiagnosisReport(voiceLanguage)
-                        }
+                        loading={audioLoading}
+                        onClick={() => (isSpeaking ? stopSpeech() : playDiagnosisReport())}
                       >
                         {isSpeaking ? "Stop" : "Play report"}
                       </Button>

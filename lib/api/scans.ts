@@ -1,4 +1,5 @@
-import { api } from "./client";
+import { api, ApiError, BASE, tokens } from "./client";
+import { readDrfError } from "./errors";
 import type { Language, Paginated, Scan, ScanDetail } from "./types";
 
 export interface ScanFilters {
@@ -51,6 +52,43 @@ export function reanalyzeScan(id: number, language?: Language) {
   const form = new FormData();
   if (language) form.append("language", language);
   return api.post<ScanDetail>(`/scans/${id}/reanalyze/`, form);
+}
+
+/**
+ * Spoken audio of a scan's diagnosis report, generated server-side (see
+ * agri-backend `apps/scans/speech.py`) so Pidgin and Hausa get real voices
+ * instead of whatever the visitor's browser happens to ship. Always reads
+ * the diagnosis in the scan's own language — the diagnosis text itself only
+ * ever exists in whatever language the scan was last analysed in, so there
+ * is no separate "playback language" to request here.
+ */
+export async function fetchScanSpeech(id: number | string): Promise<Blob> {
+  const headers = new Headers();
+  const access = tokens.access();
+  if (access) headers.set("Authorization", `Bearer ${access}`);
+
+  // The URL is the same every time for a given scan, but what it returns
+  // isn't — a re-analysis changes the diagnosis language and regenerates the
+  // clip server-side. `no-store` stops the browser from silently replaying
+  // whatever audio it cached the first time this URL was ever fetched.
+  const response = await fetch(`${BASE}/scans/${id}/speech/`, { headers, cache: "no-store" });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let parsed: unknown = null;
+    try {
+      parsed = text ? JSON.parse(text) : null;
+    } catch {
+      parsed = text;
+    }
+    throw new ApiError(
+      readDrfError(parsed, `Couldn't generate audio (${response.status})`),
+      response.status,
+      parsed,
+    );
+  }
+
+  return response.blob();
 }
 
 export function reviewScan(
