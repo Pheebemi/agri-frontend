@@ -15,6 +15,7 @@ import { SeverityChart } from "@/components/charts/severity-chart";
 import { Topbar } from "@/components/layout/topbar";
 import { ScanRow } from "@/components/scan/scan-row";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { WeatherCard } from "@/components/weather/weather-card";
 import { EmptyState, ErrorState } from "@/components/ui/empty-state";
 import { CardSkeleton, RowSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/ui/stat-card";
@@ -84,6 +85,9 @@ export default function DashboardPage() {
 
         {!error && (
           <>
+            {/* Weather */}
+            <WeatherCard />
+
             {/* Charts */}
             <div className="grid gap-4 lg:grid-cols-3">
               <Card className="lg:col-span-2">

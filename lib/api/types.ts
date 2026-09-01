@@ -20,6 +20,9 @@ export interface User {
   phone: string;
   farm_name: string;
   region: string;
+  weather_latitude: number | null;
+  weather_longitude: number | null;
+  weather_location_label: string;
   avatar: string | null;
   initials: string;
   primary_crops: number[];
@@ -251,4 +254,32 @@ export interface FarmSummary {
   expense_count: number;
   by_category: { category: number; label: string; color: ChipTone; total: number }[];
   by_farm: { farm: number; farm_name: string; total: number }[];
+}
+
+export interface WeatherSearchResult {
+  name: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface WeatherHour {
+  time: string;
+  precipitation_probability: number;
+  temperature: number;
+  weathercode: number;
+  is_day: number;
+}
+
+export interface WeatherDay {
+  date: string;
+  precipitation_probability_max: number;
+  temperature_max: number;
+  temperature_min: number;
+  weathercode: number;
+}
+
+export interface WeatherForecast {
+  hourly: WeatherHour[];
+  daily: WeatherDay[];
 }
